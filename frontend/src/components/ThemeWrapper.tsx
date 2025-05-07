@@ -4,6 +4,16 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 const theme = createTheme({
   palette: {
     mode: 'light', 
+    primary: {
+      main: '#3f51b5',
+    },
+    secondary: {
+      main: '#f50057',
+    },
+    background: {
+      default: '#f5f5f5',
+      paper: '#ffffff',
+    },
   },
   components: {
     MuiTextField: {
@@ -27,6 +37,19 @@ const theme = createTheme({
           padding: '0px 10px', 
         },
       },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    button: {
+      textTransform: 'none',
     },
   },
 });

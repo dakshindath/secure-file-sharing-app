@@ -196,6 +196,7 @@ export default function OtpVerification() {
 
     // Get email from location state or use an empty string as fallback
     const email = location.state?.email || '';
+    const password = location.state?.password || '';
     
     if (!email) {
       setError('Email information is missing. Please go back to signup.');
@@ -205,15 +206,42 @@ export default function OtpVerification() {
     try {
       setLoading(true);
       
-      // Make API call directly from component
-      await axios.post('http://localhost:5000/api/auth/verify-otp', {
+      // Make API call to verify OTP
+      await axios.post('http://localhost:5000/api/auth/verify', {
         email,
         otp: otpString
       });
       
-      setLoading(false);
-      setError('');
-      navigate('/signin', { state: { email } });
+      // If verification successful, automatically log in the user
+      if (password) {
+        try {
+          // Make login API call
+          const loginResponse = await axios.post('http://localhost:5000/api/auth/login', {
+            email,
+            password
+          });
+          
+          // Store token in localStorage
+          localStorage.setItem('authToken', loginResponse.data.token);
+          localStorage.setItem('user', JSON.stringify(loginResponse.data.user));
+          
+          // Set the default authorization header for future requests
+          axios.defaults.headers.common['x-auth-token'] = loginResponse.data.token;
+          
+          setLoading(false);
+          setError('');
+          navigate('/home');
+        } catch (loginError: any) {
+          setLoading(false);
+          // If automatic login fails, redirect to login page
+          navigate('/signin', { state: { email } });
+        }
+      } else {
+        // If we don't have the password (e.g., came from resend), redirect to login
+        setLoading(false);
+        setError('');
+        navigate('/signin', { state: { email } });
+      }
     } catch (error: any) {
       setLoading(false);
       setError(error.response?.data?.message || 'Invalid OTP. Please try again.');

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -14,8 +14,8 @@ import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import { GoogleIcon, FacebookIcon } from './customicon';
-import ThemeWrapper from './ThemeWrapper';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; // Import the auth context
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -54,12 +54,19 @@ const LoginContainer = styled(Stack)(({ theme }) => ({
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login, clearAuth } = useAuth(); // Add clearAuth from useAuth hook
   const [errors, setErrors] = React.useState({
     email: '',
     password: '',
   });
   const [loading, setLoading] = React.useState(false);
   const [apiError, setApiError] = React.useState('');
+  
+  // Function to handle manual authentication reset
+  const handleClearAuth = () => {
+    clearAuth();
+    window.location.reload(); // Reload the page to refresh the auth state
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -77,7 +84,7 @@ export default function Login() {
       newErrors.email = 'Please enter a valid email address.';
     }
 
-    if (!password || password.length < 6) {
+    if (!password || password.length < 8) {
       newErrors.password = 'Password must be at least 6 characters long.';
     }
 
@@ -87,11 +94,18 @@ export default function Login() {
       try {
         setLoading(true);
         
-        // Make API call directly from component
-        await axios.post('http://localhost:5000/api/auth/login', {
+        const response = await axios.post('http://localhost:5000/api/auth/login', {
           email,
           password
         });
+        
+        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        axios.defaults.headers.common['x-auth-token'] = response.data.token;
+        
+        // Update the auth context state
+        login(response.data.token, response.data.user);
         
         setLoading(false);
         navigate('/home');
@@ -104,109 +118,120 @@ export default function Login() {
   };
 
   return (
-    <ThemeWrapper>
-      <LoginContainer direction="column" justifyContent="center">
-        <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Sign in
+    <LoginContainer direction="column" justifyContent="center">
+      <Card variant="outlined">
+        <Typography
+          component="h1"
+          variant="h4"
+          sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
+        >
+          Sign in
+        </Typography>
+
+        {apiError && (
+          <Typography color="error" sx={{ mt: 1, mb: 1 }}>
+            {apiError}
           </Typography>
+        )}
+        
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          noValidate
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+        >
+          <FormControl>
+            <FormLabel htmlFor="email">Email</FormLabel>
+            <TextField
+              error={!!errors.email}
+              helperText={errors.email}
+              id="email"
+              name="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              required
+              fullWidth
+            />
+          </FormControl>
 
-          {apiError && (
-            <Typography color="error" sx={{ mt: 1, mb: 1 }}>
-              {apiError}
-            </Typography>
-          )}
-          
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          <FormControl>
+            <FormLabel htmlFor="password">Password</FormLabel>
+            <TextField
+              error={!!errors.password}
+              helperText={errors.password}
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••"
+              autoComplete="current-password"
+              required
+              fullWidth
+            />
+          </FormControl>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <FormControlLabel
+              control={<Checkbox value="remember" color="primary" />}
+              label="Remember me"
+            />
+            <Link component={RouterLink} to="/forgot-password" variant="body2">
+              Forgot password?
+            </Link>
+          </Box>
+
+          <Button 
+            type="submit" 
+            fullWidth 
+            variant="contained"
+            disabled={loading}
           >
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                error={!!errors.email}
-                helperText={errors.email}
-                id="email"
-                name="email"
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-                fullWidth
-              />
-            </FormControl>
+            {loading ? 'Signing in...' : 'Sign in'}
+          </Button>
+        </Box>
 
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                error={!!errors.password}
-                helperText={errors.password}
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••"
-                autoComplete="current-password"
-                required
-                fullWidth
-              />
-            </FormControl>
+        <Divider>or</Divider>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
-              />
-              <Link href="/forgot-password" variant="body2">
-                Forgot password?
-              </Link>
-            </Box>
-
-            <Button 
-              type="submit" 
-              fullWidth 
-              variant="contained"
-              disabled={loading}
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </Button>
-          </Box>
-
-          <Divider>or</Divider>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert('Sign in with Google')}
-              startIcon={<GoogleIcon />}
-            >
-              Sign in with Google
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert('Sign in with Facebook')}
-              startIcon={<FacebookIcon />}
-            >
-              Sign in with Facebook
-            </Button>
-          </Box>
-          
-          <Box sx={{ mt: 3, mb: 2 }}>
-            <Typography sx={{ textAlign: 'center' }}>
-              Don't have an account?{' '}
-              <Link href="/signup" variant="body2">
-                Sign up
-              </Link>
-            </Typography>
-          </Box>
-        </Card>
-      </LoginContainer>
-    </ThemeWrapper>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => alert('Sign in with Google')}
+            startIcon={<GoogleIcon />}
+          >
+            Sign in with Google
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => alert('Sign in with Facebook')}
+            startIcon={<FacebookIcon />}
+          >
+            Sign in with Facebook
+          </Button>
+        </Box>
+        
+        <Box sx={{ mt: 3, mb: 2 }}>
+          <Typography sx={{ textAlign: 'center' }}>
+            Don't have an account?{' '}
+            <Link component={RouterLink} to="/signup" variant="body2">
+              Sign up
+            </Link>
+          </Typography>
+        </Box>
+        
+        {/* Add a discreet button for clearing authentication state */}
+        <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
+          <Button 
+            variant="text" 
+            color="inherit" 
+            size="small"
+            onClick={handleClearAuth}
+            sx={{ fontSize: '0.7rem', color: 'text.secondary' }}
+          >
+            Having trouble? Reset authentication
+          </Button>
+        </Box>
+      </Card>
+    </LoginContainer>
   );
 }

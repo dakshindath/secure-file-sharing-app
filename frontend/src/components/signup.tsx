@@ -14,7 +14,6 @@ import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import { GoogleIcon, FacebookIcon } from './customicon';
-import ThemeWrapper from './ThemeWrapper';
 import axios from 'axios';
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -110,7 +109,7 @@ export default function SignUp() {
         setLoading(true);
 
         // Make API call directly from component
-        await axios.post('http://localhost:5000/api/auth/signup', {
+        await axios.post('http://localhost:5000/api/auth/register', {
           username,
           email,
           phone: phoneNumber,
@@ -118,8 +117,8 @@ export default function SignUp() {
         });
 
         setLoading(false);
-        // Navigate to OTP verification page with email in state
-        navigate('/verify-otp', { state: { email } });
+        // Navigate to OTP verification page with email and password in state
+        navigate('/verify-otp', { state: { email, password } });
       } catch (error: any) {
         setLoading(false);
         setApiError(error.response?.data?.message || 'An error occurred during signup');
@@ -129,147 +128,145 @@ export default function SignUp() {
   };
 
   return (
-    <ThemeWrapper>
-      <SignUpContainer direction="column" justifyContent="center">
-        <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Sign up
+    <SignUpContainer direction="column" justifyContent="center">
+      <Card variant="outlined">
+        <Typography
+          component="h1"
+          variant="h4"
+          sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
+        >
+          Sign up
+        </Typography>
+
+        {apiError && (
+          <Typography color="error" sx={{ mt: 1, mb: 1 }}>
+            {apiError}
           </Typography>
+        )}
 
-          {apiError && (
-            <Typography color="error" sx={{ mt: 1, mb: 1 }}>
-              {apiError}
-            </Typography>
-          )}
-
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
-            <FormControl>
-              <FormLabel htmlFor="username">Username</FormLabel>
-              <TextField
-                error={!!errors.username}
-                helperText={errors.username}
-                id="username"
-                name="username"
-                placeholder="username"
-                autoComplete="username"
-                required
-                fullWidth
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                error={!!errors.email}
-                helperText={errors.email}
-                id="email"
-                name="email"
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-                fullWidth
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="phoneNumber">Phone Number</FormLabel>
-              <TextField
-                error={!!errors.phoneNumber}
-                helperText={errors.phoneNumber}
-                id="phoneNumber"
-                name="phoneNumber"
-                placeholder="1234567890"
-                autoComplete="tel"
-                required
-                fullWidth
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                error={!!errors.password}
-                helperText={errors.password}
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••"
-                autoComplete="new-password"
-                required
-                fullWidth
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
-              <TextField
-                error={!!errors.confirmPassword}
-                helperText={errors.confirmPassword}
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="••••••"
-                autoComplete="new-password"
-                required
-                fullWidth
-              />
-            </FormControl>
-
-            <FormControlLabel
-              control={<Checkbox value="agree" color="primary" />}
-              label="I agree to the Terms and Conditions"
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          noValidate
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+        >
+          <FormControl>
+            <FormLabel htmlFor="username">Username</FormLabel>
+            <TextField
+              error={!!errors.username}
+              helperText={errors.username}
+              id="username"
+              name="username"
+              placeholder="username"
+              autoComplete="username"
+              required
+              fullWidth
             />
+          </FormControl>
 
-            <Button
-              type="submit"
+          <FormControl>
+            <FormLabel htmlFor="email">Email</FormLabel>
+            <TextField
+              error={!!errors.email}
+              helperText={errors.email}
+              id="email"
+              name="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              required
               fullWidth
-              variant="contained"
-              disabled={loading}
-            >
-              {loading ? 'Signing up...' : 'Sign up'}
-            </Button>
-          </Box>
+            />
+          </FormControl>
 
-          <Divider>or</Divider>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Button
+          <FormControl>
+            <FormLabel htmlFor="phoneNumber">Phone Number</FormLabel>
+            <TextField
+              error={!!errors.phoneNumber}
+              helperText={errors.phoneNumber}
+              id="phoneNumber"
+              name="phoneNumber"
+              placeholder="1234567890"
+              autoComplete="tel"
+              required
               fullWidth
-              variant="outlined"
-              onClick={() => alert('Sign up with Google')}
-              startIcon={<GoogleIcon />}
-            >
-              Sign up with Google
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert('Sign up with Facebook')}
-              startIcon={<FacebookIcon />}
-            >
-              Sign up with Facebook
-            </Button>
-          </Box>
+            />
+          </FormControl>
 
-          <Box>
-            <Typography sx={{ textAlign: 'center' }}>
-              Already have an account?{' '}
-              <Link href="/signin" variant="body2">
-                Sign in
-              </Link>
-            </Typography>
-          </Box>
-        </Card>
-      </SignUpContainer>
-    </ThemeWrapper>
+          <FormControl>
+            <FormLabel htmlFor="password">Password</FormLabel>
+            <TextField
+              error={!!errors.password}
+              helperText={errors.password}
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••"
+              autoComplete="new-password"
+              required
+              fullWidth
+            />
+          </FormControl>
+
+          <FormControl>
+            <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
+            <TextField
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword}
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="••••••"
+              autoComplete="new-password"
+              required
+              fullWidth
+            />
+          </FormControl>
+
+          <FormControlLabel
+            control={<Checkbox value="agree" color="primary" />}
+            label="I agree to the Terms and Conditions"
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={loading}
+          >
+            {loading ? 'Signing up...' : 'Sign up'}
+          </Button>
+        </Box>
+
+        <Divider>or</Divider>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => alert('Sign up with Google')}
+            startIcon={<GoogleIcon />}
+          >
+            Sign up with Google
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => alert('Sign up with Facebook')}
+            startIcon={<FacebookIcon />}
+          >
+            Sign up with Facebook
+          </Button>
+        </Box>
+
+        <Box>
+          <Typography sx={{ textAlign: 'center' }}>
+            Already have an account?{' '}
+            <Link href="/signin" variant="body2">
+              Sign in
+            </Link>
+          </Typography>
+        </Box>
+      </Card>
+    </SignUpContainer>
   );
 }
