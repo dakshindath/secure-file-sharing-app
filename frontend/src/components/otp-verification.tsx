@@ -147,7 +147,7 @@ export default function OtpVerification() {
 
   const handleResendOtp = async () => {
     // Reset countdown and disable resend button
-    setCountdown(30);
+    setCountdown(60);
     setIsResendDisabled(true);
     
     // Start countdown again

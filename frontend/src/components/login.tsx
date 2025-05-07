@@ -46,7 +46,9 @@ const LoginContainer = styled(Stack)(({ theme }) => ({
     zIndex: -1,
     inset: 0,
     backgroundImage:
-      'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
+    theme.palette.mode === 'dark' 
+      ? 'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 10%), hsl(0, 0%, 5%))'
+      : 'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
   },
 }));
 
