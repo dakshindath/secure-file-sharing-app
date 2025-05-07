@@ -5,11 +5,16 @@ module.exports = async (email, otp) => {
     service: 'gmail', 
     auth: {
       user: 'your-gmail',
+<<<<<<< HEAD
       pass: 'your-password', 
     },
     tls: {
       rejectUnauthorized: false, // Allow self-signed certificates if needed
     },
+=======
+      pass: 'password'
+    }
+>>>>>>> 69613b26c28441ef3fcde729de8e5d5b87f48aa9
   });
 
   const mailOptions = {
